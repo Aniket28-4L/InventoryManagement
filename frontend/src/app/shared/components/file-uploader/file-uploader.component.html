@@ -1,0 +1,10 @@
+<div class="space-y-2">
+  <div class="label">{{ label }}</div>
+  <div class="border-2 border-dashed rounded-lg p-6 text-center bg-white">
+    <input #input type="file" class="hidden" [accept]="accept" [multiple]="multiple" (change)="onChange($event)" />
+    <button type="button" class="btn btn-secondary" (click)="openPicker()">Choose Files</button>
+    <div class="mt-2 text-xs text-gray-500">{{ accept }}</div>
+  </div>
+</div>
+
+

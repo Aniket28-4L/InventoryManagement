@@ -1,0 +1,115 @@
+<div class="space-y-4">
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <h1 class="page-title">Stock Transfers</h1>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+      New Transfer
+    </button>
+  </div>
+
+  <div class="card p-4">
+    <div *ngIf="loading" class="flex items-center justify-center py-12">
+      <app-spinner class="h-6 w-6"></app-spinner>
+    </div>
+
+    <div *ngIf="!loading && transfers.length === 0" class="text-center py-12 text-gray-500">
+      No stock transfers found.
+    </div>
+
+    <div *ngIf="!loading && transfers.length > 0" class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-neutral-200">
+        <thead class="bg-neutral-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">Date</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">Product</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">Variant</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">From</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">To</th>
+            <th class="px-6 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">Quantity</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">Status</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-neutral-100">
+          <tr *ngFor="let transfer of transfers" class="hover:bg-neutral-50 transition-colors">
+            <td class="px-6 py-4 text-sm text-neutral-700">{{ transfer.createdAt | date:'short' }}</td>
+            <td class="px-6 py-4 text-sm text-neutral-700">{{ transfer.items && transfer.items.length > 0 && transfer.items[0]?.product ? transfer.items[0].product.name : (transfer.items && transfer.items.length > 0 ? transfer.items[0]?.name : '-') }}</td>
+            <td class="px-6 py-4 text-sm text-neutral-700">{{ transfer.items && transfer.items.length > 0 ? (transfer.items[0]?.variantValue || '-') : '-' }}</td>
+            <td class="px-6 py-4 text-sm text-neutral-700">{{ transfer.fromWarehouse?.name || '-' }}</td>
+            <td class="px-6 py-4 text-sm text-neutral-700">{{ transfer.toWarehouse?.name || transfer.toStore?.name || '-' }}</td>
+            <td class="px-6 py-4 text-sm text-right font-medium">{{ transfer.items && transfer.items.length > 0 ? (transfer.items[0]?.quantity || 0) : 0 }}</td>
+            <td class="px-6 py-4 text-sm">
+              <span [ngClass]="{
+                'px-2 py-1 rounded-full text-xs font-medium': true,
+                'bg-green-100 text-green-800': transfer.status === 'completed',
+                'bg-yellow-100 text-yellow-800': transfer.status === 'pending',
+                'bg-gray-100 text-gray-800': !transfer.status
+              }">
+                {{ transfer.status || 'pending' }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<app-modal *ngIf="showAddModal" [open]="showAddModal" (close)="closeAddModal()" title="New Stock Transfer">
+  <form (ngSubmit)="submitTransfer()" class="space-y-4">
+    <div>
+      <label class="label">From Warehouse <span class="text-red-500">*</span></label>
+      <select class="input" [(ngModel)]="transferForm.fromWarehouse" name="fromWarehouse" required>
+        <option value="">Select warehouse</option>
+        <option *ngFor="let wh of warehouses" [value]="wh.id">{{ wh.name }}</option>
+      </select>
+    </div>
+    <div>
+      <label class="label">Destination</label>
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2"><input type="radio" [(ngModel)]="transferForm.destinationType" name="destinationType" value="warehouse" /> Warehouse</label>
+        <label class="flex items-center gap-2"><input type="radio" [(ngModel)]="transferForm.destinationType" name="destinationType" value="store" /> Store</label>
+      </div>
+    </div>
+    <div *ngIf="transferForm.destinationType === 'warehouse'">
+      <label class="label">To Warehouse <span class="text-red-500">*</span></label>
+      <select class="input" [(ngModel)]="transferForm.toWarehouse" name="toWarehouse">
+        <option value="">Select warehouse</option>
+        <option *ngFor="let wh of warehouses" [value]="wh.id">{{ wh.name }}</option>
+      </select>
+    </div>
+    <div *ngIf="transferForm.destinationType === 'store'">
+      <label class="label">To Store <span class="text-red-500">*</span></label>
+      <select class="input" [(ngModel)]="transferForm.toStore" name="toStore">
+        <option value="">Select store</option>
+        <option *ngFor="let s of stores" [value]="s.id">{{ s.name }}</option>
+      </select>
+    </div>
+    <div>
+      <label class="label">Product <span class="text-red-500">*</span></label>
+      <select class="input" [(ngModel)]="transferForm.productId" name="productId" (ngModelChange)="onProductChange($event)" required>
+        <option value="">Select product</option>
+        <option *ngFor="let product of products" [value]="product.id">{{ product.name }}</option>
+      </select>
+    </div>
+    
+    <div *ngIf="productVariants.length > 0">
+      <label class="label">Variant <span class="text-red-500">*</span></label>
+      <select class="input" [(ngModel)]="transferForm.variantValue" name="variantValue" required>
+        <option value="">Select variant</option>
+        <option *ngFor="let variant of productVariants" [value]="variant.value">{{ variant.option }}: {{ variant.value }}</option>
+      </select>
+    </div>
+    <div>
+      <label class="label">Quantity <span class="text-red-500">*</span></label>
+      <input type="number" step="1" min="1" class="input" [(ngModel)]="transferForm.quantity" name="quantity" required />
+    </div>
+    <div>
+      <label class="label">Notes</label>
+      <textarea class="input min-h-[80px]" [(ngModel)]="transferForm.notes" name="notes"></textarea>
+    </div>
+    <div class="flex gap-2 pt-4">
+      <button type="submit" class="btn btn-primary flex-1">Create Transfer</button>
+      <button type="button" class="btn btn-secondary flex-1" (click)="closeAddModal()">Cancel</button>
+    </div>
+  </form>
+</app-modal>

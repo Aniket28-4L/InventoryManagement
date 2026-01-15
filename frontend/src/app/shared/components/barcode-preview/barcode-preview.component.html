@@ -1,0 +1,9 @@
+<div class="inline-flex flex-col items-center gap-2 p-3 border rounded-lg bg-white">
+  <div class="text-xs text-gray-600" *ngIf="label">{{ label }}</div>
+  <ng-container [ngSwitch]="type">
+    <svg *ngSwitchCase="'code128'" #svg></svg>
+    <canvas *ngSwitchCase="'qr'" #canvas></canvas>
+  </ng-container>
+</div>
+
+

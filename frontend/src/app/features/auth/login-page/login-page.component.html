@@ -1,0 +1,31 @@
+<div class="min-h-screen grid place-items-center bg-gradient-to-br from-neutral-50 via-white to-brand-50 px-4 py-12">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <div class="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-br from-brand-600 to-brand-700 text-white items-center justify-center font-bold text-2xl shadow-lg mb-4">
+        IM
+      </div>
+      <h1 class="text-3xl font-bold text-neutral-900 mb-2">Welcome Back</h1>
+      <p class="text-neutral-500">Sign in to your inventory management account</p>
+    </div>
+    <div class="card p-8 shadow-large">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+        <div class="form-group">
+          <label class="label">Email Address</label>
+          <input class="input" type="email" formControlName="email" placeholder="Enter your email" required />
+        </div>
+        <div class="form-group">
+          <label class="label">Password</label>
+          <input class="input" type="password" formControlName="password" placeholder="Enter your password" required />
+        </div>
+        <button class="btn btn-primary w-full btn-lg" [disabled]="loading">
+          {{ loading ? 'Signing in...' : 'Sign In' }}
+        </button>
+      </form>
+    </div>
+    <p class="text-center text-sm text-neutral-500 mt-6">
+      © {{ getCurrentYear() }} Inventory Management. All rights reserved.
+    </p>
+  </div>
+</div>
+
+

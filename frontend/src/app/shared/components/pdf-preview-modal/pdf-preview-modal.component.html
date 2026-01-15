@@ -1,0 +1,11 @@
+<app-modal [open]="open" [title]="title" (close)="close.emit()">
+  <div #content class="bg-white p-4 rounded border">
+    <ng-content></ng-content>
+  </div>
+  <div modal-footer>
+    <button class="btn btn-secondary" (click)="close.emit()">Close</button>
+    <button class="btn btn-primary" (click)="download()">Download PDF</button>
+  </div>
+</app-modal>
+
+

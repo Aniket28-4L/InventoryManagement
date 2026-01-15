@@ -1,0 +1,87 @@
+<div class="card overflow-hidden">
+  <div class="p-5 border-b border-neutral-200 bg-neutral-50 flex items-center justify-between gap-4" *ngIf="showSearch || actionsTemplate">
+    <div class="flex items-center gap-3 w-full max-w-md" *ngIf="showSearch">
+      <div class="relative flex-1">
+        <input
+          class="input flex-1 pr-10"
+          placeholder="Search records..."
+          [ngModel]="query"
+          (ngModelChange)="onSearchInput($event)"
+        />
+        <button 
+          *ngIf="query" 
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          (click)="clearSearch()"
+          type="button"
+        >
+          <lucide-icon name="x" class="h-4 w-4"></lucide-icon>
+        </button>
+      </div>
+    </div>
+    <ng-container *ngIf="actionsTemplate">
+      <ng-container *ngTemplateOutlet="actionsTemplate"></ng-container>
+    </ng-container>
+  </div>
+
+  <div class="overflow-x-auto scrollbar-thin">
+    <table class="min-w-full divide-y divide-neutral-200">
+      <thead class="bg-neutral-50">
+        <tr>
+          <th
+            *ngFor="let col of columns"
+            class="px-6 py-3.5 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider"
+            [class.text-center]="col.align === 'center'"
+            [class.text-right]="col.align === 'right'"
+          >
+            {{ col.label }}
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-neutral-100">
+        <tr *ngIf="loading">
+          <td class="px-6 py-12 text-center" [attr.colspan]="columns.length">
+            <app-spinner className="mx-auto"></app-spinner>
+          </td>
+        </tr>
+        <tr *ngIf="!loading && data.length === 0">
+          <td class="px-6 py-12 text-center text-sm text-neutral-500" [attr.colspan]="columns.length">
+            No records found.
+          </td>
+        </tr>
+        <tr *ngFor="let row of data" class="hover:bg-neutral-50 transition-colors">
+          <td
+            *ngFor="let col of columns"
+            class="px-6 py-4 text-sm text-neutral-700"
+            [class.text-center]="col.align === 'center'"
+            [class.text-right]="col.align === 'right'"
+          >
+            <ng-container [ngSwitch]="true">
+              <ng-container *ngSwitchDefault>
+                {{ displayValue(col, row) || '-' }}
+              </ng-container>
+            </ng-container>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="p-5 border-t border-neutral-200 bg-neutral-50 flex items-center justify-between flex-wrap gap-4">
+    <div class="text-sm font-medium text-neutral-700">
+      Total: <span class="text-neutral-900">{{ total }}</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="btn btn-secondary btn-sm" (click)="handlePrev()" [disabled]="!canPrev">
+        Previous
+      </button>
+      <div class="text-sm text-neutral-600 font-medium">
+        Page <span class="text-neutral-900">{{ page }}</span> of <span class="text-neutral-900">{{ totalPages }}</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" (click)="handleNext()" [disabled]="!canNext">
+        Next
+      </button>
+    </div>
+  </div>
+</div>
+
+

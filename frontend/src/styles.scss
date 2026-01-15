@@ -1,0 +1,292 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Inter', sans-serif;
+  background-color: #f7f8fa;
+  color: #101828;
+}
+
+@layer components {
+  .card { @apply bg-white rounded-2xl shadow-soft border border-neutral-100 transition-all duration-200; }
+  .card-hover { @apply hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-neutral-200; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-primary { @apply bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-700 focus:ring-brand-500 shadow-sm hover:shadow-md; }
+  .btn-secondary { @apply bg-neutral-100 text-neutral-700 hover:bg-neutral-200 active:bg-neutral-300 focus:ring-neutral-400 border border-neutral-200; }
+  .btn-danger { @apply bg-red-600 text-white hover:bg-red-700 active:bg-red-800 focus:ring-red-500; }
+  .btn-ghost { @apply bg-transparent text-neutral-600 hover:bg-neutral-100 focus:ring-neutral-400; }
+  .btn-sm { @apply px-3 py-1.5 text-xs; }
+  .btn-lg { @apply px-6 py-3 text-base; }
+  .input { @apply w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all duration-200 disabled:bg-neutral-50; }
+  .label { @apply block text-sm font-semibold text-neutral-700 mb-1.5; }
+  .page-title { @apply text-2xl font-bold text-neutral-900 tracking-tight; }
+  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgb(203 213 225) transparent; }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background-color: rgb(203 213 225); border-radius: 3px; }
+}
+
+/* Screen styles - ensure print label container is hidden on screen */
+.print-label-container {
+  display: none !important;
+  visibility: hidden !important;
+  position: fixed !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  z-index: -1 !important;
+}
+
+/* Print styles - hide everything except product labels */
+@media print {
+  /* Reset body for print */
+  @page {
+    margin: 0;
+    size: auto;
+  }
+  
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  /* Hide everything except print label container */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Hide all content by default, then reveal label container */
+  body * {
+    visibility: hidden !important;
+  }
+  
+  /* Show only the print label container */
+  .print-label-container,
+  .print-label-container.print-ready,
+  .print-label-container.print-only {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    background: white !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    z-index: 99999 !important;
+    visibility: visible !important;
+    overflow: visible !important;
+  }
+  
+  /* Show all children of print container */
+  .print-label-container *,
+  .print-label-container.print-ready *,
+  .print-label-container.print-only * {
+    visibility: visible !important;
+    display: block !important;
+  }
+  
+  /* Special handling for flex containers */
+  .print-label-container .label-barcodes,
+  .print-label-container.print-ready .label-barcodes {
+    display: flex !important;
+  }
+  
+  .print-label-container .label-barcode-item,
+  .print-label-container .label-qr-item,
+  .print-label-container.print-ready .label-barcode-item,
+  .print-label-container.print-ready .label-qr-item {
+    display: flex !important;
+  }
+  
+  /* Show all content inside print label container */
+  .print-label-container,
+  .print-label-container * {
+    visibility: visible !important;
+  }
+  
+  /* Special handling for flex containers */
+  .print-label-container .label-barcodes {
+    display: flex !important;
+    visibility: visible !important;
+  }
+  
+  .print-label-container .label-barcode-item,
+  .print-label-container .label-qr-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    visibility: visible !important;
+  }
+  
+  /* Ensure inline elements are displayed correctly */
+  .print-label-container p,
+  .print-label-container h2,
+  .print-label-container div {
+    visibility: visible !important;
+  }
+  
+  .print-label-container p {
+    display: block !important;
+  }
+  
+  .print-label-container h2 {
+    display: block !important;
+  }
+  
+  .print-label-container div {
+    display: block !important;
+  }
+  
+  /* Ensure barcode preview component wrapper is visible */
+  .print-label-container app-barcode-preview {
+    display: inline-flex !important;
+    visibility: visible !important;
+  }
+  
+  .print-label-container app-barcode-preview > div {
+    display: inline-flex !important;
+    visibility: visible !important;
+    border: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+  
+  /* Label styling */
+  .product-label {
+    width: 3.5in;
+    height: 2in;
+    border: 2px solid #000 !important;
+    padding: 15px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    page-break-inside: avoid;
+    background: white !important;
+    box-sizing: border-box !important;
+  }
+  
+  .label-header {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  
+  .label-product-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 4px 0;
+    line-height: 1.2;
+    color: #000;
+  }
+  
+  .label-sku {
+    font-size: 10px;
+    margin: 0;
+    color: #666;
+  }
+  
+  .label-barcodes {
+    display: flex !important;
+    justify-content: space-around;
+    align-items: center;
+    flex: 1;
+    gap: 10px;
+  }
+  
+  .label-barcode-item,
+  .label-qr-item {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .label-barcode-text,
+  .label-qr-text {
+    font-size: 8px;
+    margin: 0;
+    text-align: center;
+    color: #000;
+  }
+  
+  .label-footer {
+    text-align: center;
+    margin-top: 4px;
+  }
+  
+  .label-price {
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0;
+    color: #000;
+  }
+  
+  /* Ensure barcode images are visible */
+  .print-label-container app-barcode-preview {
+    display: inline-flex !important;
+    visibility: visible !important;
+    width: auto !important;
+    height: auto !important;
+  }
+  
+  .print-label-container app-barcode-preview > div {
+    display: inline-flex !important;
+    visibility: visible !important;
+    border: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+  
+  .print-label-container app-barcode-preview svg {
+    max-width: 200px !important;
+    width: auto !important;
+    height: 60px !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  .print-label-container app-barcode-preview canvas {
+    width: 120px !important;
+    height: 120px !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  .print-label-container app-barcode-preview img {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  /* Ensure text is visible */
+  .print-label-container .label-product-name,
+  .print-label-container .label-sku,
+  .print-label-container .label-barcode-text,
+  .print-label-container .label-qr-text,
+  .print-label-container .label-price {
+    color: #000 !important;
+    visibility: visible !important;
+    display: block !important;
+  }
+  
+  /* Remove margins and padding from body */
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Hide navigation, headers, footers, etc. */
+  header, nav, footer, aside, .sidebar, .topbar, .navbar {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+

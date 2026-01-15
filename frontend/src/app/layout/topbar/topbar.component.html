@@ -1,0 +1,21 @@
+<header class="h-20 bg-white border-b border-neutral-200 shadow-soft sticky top-0 z-30 flex items-center justify-between px-4 md:px-8">
+  <div class="flex items-center gap-4 flex-1">
+    <button class="md:hidden btn btn-ghost p-2" (click)="toggleSidebar.emit()">
+      <lucide-icon name="menu" class="h-5 w-5 text-neutral-600"></lucide-icon>
+    </button>
+  </div>
+  <div class="flex items-center gap-3">
+    <div class="hidden sm:flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-neutral-50 transition-colors" *ngIf="auth.user as user">
+      <div class="h-9 w-9 rounded-full bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
+        {{ user.name?.charAt(0)?.toUpperCase() || 'U' }}
+      </div>
+      <div class="text-right">
+        <div class="text-sm font-semibold text-neutral-900">{{ user.name || 'User' }}</div>
+        <div class="text-xs text-neutral-500 font-medium">{{ auth.role }}</div>
+      </div>
+    </div>
+    <button class="btn btn-secondary btn-sm" (click)="logout()">Logout</button>
+  </div>
+</header>
+
+

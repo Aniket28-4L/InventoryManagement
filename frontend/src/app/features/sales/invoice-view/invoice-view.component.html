@@ -1,0 +1,44 @@
+<div class="space-y-4">
+  <h1 class="page-title">Invoice</h1>
+  <div class="card p-4" *ngIf="loading" class="text-center py-4"><app-spinner class="h-6 w-6 mx-auto"></app-spinner></div>
+  <div *ngIf="!loading && sale" class="card p-4">
+    <div class="grid grid-cols-2 gap-2 mb-4">
+      <div>
+        <div class="text-sm text-gray-600">Invoice Number</div>
+        <div class="font-medium">{{ sale.orderNumber }}</div>
+      </div>
+      <div>
+        <div class="text-sm text-gray-600">Invoice Date</div>
+        <div class="font-medium">{{ sale.createdAt | date:'medium' }}</div>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b">
+            <th class="text-left py-2 px-3 text-sm font-medium text-gray-700">Description</th>
+            <th class="text-right py-2 px-3 text-sm font-medium text-gray-700">Quantity</th>
+            <th class="text-right py-2 px-3 text-sm font-medium text-gray-700">Unit Price</th>
+            <th class="text-right py-2 px-3 text-sm font-medium text-gray-700">Discount</th>
+            <th class="text-right py-2 px-3 text-sm font-medium text-gray-700">Line Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let it of sale.items" class="border-b">
+            <td class="py-2 px-3">{{ it.productName }}</td>
+            <td class="py-2 px-3 text-right">{{ it.quantity }}</td>
+            <td class="py-2 px-3 text-right">KD {{ it.unitPrice?.toFixed(2) }}</td>
+            <td class="py-2 px-3 text-right">KD {{ (it.discount || 0).toFixed(2) }}</td>
+            <td class="py-2 px-3 text-right">KD {{ (it.unitPrice * it.quantity - (it.discount || 0)).toFixed(2) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="flex justify-end mt-4">
+      <div class="text-lg font-semibold">Grand Total: KD {{ sale.total?.toFixed(2) }}</div>
+    </div>
+    <div class="flex justify-end mt-4">
+      <a class="btn btn-secondary" [href]="pdfUrl()" target="_blank">Download Invoice</a>
+    </div>
+  </div>
+</div>

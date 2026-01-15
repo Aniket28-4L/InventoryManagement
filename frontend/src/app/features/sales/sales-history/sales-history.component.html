@@ -1,0 +1,40 @@
+<div class="space-y-4">
+  <h1 class="page-title">Sales History</h1>
+  <div class="card p-4">
+    <div class="flex items-center gap-2 mb-3">
+      <input [(ngModel)]="searchTerm" placeholder="Search by product name" class="input w-full" />
+    </div>
+    <div *ngIf="loading" class="text-center py-4"><app-spinner class="h-6 w-6 mx-auto"></app-spinner></div>
+    <div *ngIf="!loading && filteredSales().length === 0" class="text-center py-8 text-gray-500">No sales found.</div>
+    <div *ngIf="!loading && filteredSales().length > 0" class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b">
+            <th class="text-left py-2 px-3 text-sm font-medium text-gray-700">Invoice Number</th>
+            <th class="text-left py-2 px-3 text-sm font-medium text-gray-700">Invoice Date</th>
+            <th class="text-left py-2 px-3 text-sm font-medium text-gray-700">Product Names</th>
+            <th class="text-left py-2 px-3 text-sm font-medium text-gray-700">Prices</th>
+            <th class="text-left py-2 px-3 text-sm font-medium text-gray-700">Quantities</th>
+            <th class="text-left py-2 px-3 text-sm font-medium text-gray-700">Totals</th>
+            <th class="text-left py-2 px-3 text-sm font-medium text-gray-700">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filteredSales()" class="border-b">
+            <td class="py-2 px-3">{{ s.orderNumber }}</td>
+            <td class="py-2 px-3">{{ s.createdAt | date:'mediumDate' }}</td>
+            <td class="py-2 px-3">{{ productNames(s) }}</td>
+            <td class="py-2 px-3">{{ pricesList(s) }}</td>
+            <td class="py-2 px-3">{{ quantitiesList(s) }}</td>
+            <td class="py-2 px-3">{{ totalsList(s) }}</td>
+            <td class="py-2 px-3">
+              <button (click)="deleteSale(s.id)" class="text-red-500 hover:text-red-700 transition-colors p-1" title="Delete Sale">
+                <lucide-icon name="trash-2" class="h-4 w-4"></lucide-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

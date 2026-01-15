@@ -1,0 +1,62 @@
+<div class="space-y-4">
+  <h1 class="page-title">{{ isEditMode ? 'Edit Warehouse' : 'Add Warehouse' }}</h1>
+  <div *ngIf="loading" class="flex items-center justify-center py-20">
+    <app-spinner class="h-8 w-8"></app-spinner>
+  </div>
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="onSubmit()" class="card p-4 space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="label">Name <span class="text-red-500">*</span></label>
+        <input class="input" formControlName="name" required />
+      </div>
+      <div>
+        <label class="label">Code <span class="text-red-500">*</span></label>
+        <input class="input" formControlName="code" required />
+      </div>
+      <div class="md:col-span-2">
+        <label class="label">Address</label>
+        <input class="input" formControlName="address" />
+      </div>
+      <div>
+        <label class="label">City</label>
+        <input class="input" formControlName="city" />
+      </div>
+      <div>
+        <label class="label">State</label>
+        <input class="input" formControlName="state" />
+      </div>
+      <div>
+        <label class="label">Zip Code</label>
+        <input class="input" formControlName="zipCode" />
+      </div>
+      <div>
+        <label class="label">Country</label>
+        <input class="input" formControlName="country" />
+      </div>
+      <div>
+        <label class="label">Phone</label>
+        <input class="input" type="tel" formControlName="phone" />
+      </div>
+      <div>
+        <label class="label">Email</label>
+        <input class="input" type="email" formControlName="email" />
+      </div>
+      <div>
+        <label class="label">Manager</label>
+        <input class="input" formControlName="manager" />
+      </div>
+      <div class="md:col-span-2">
+        <label class="flex items-center gap-2">
+          <input type="checkbox" formControlName="isActive" />
+          <span>Active</span>
+        </label>
+      </div>
+    </div>
+    <div class="flex gap-2 pt-4">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">
+        {{ saving ? (isEditMode ? 'Saving...' : 'Creating...') : (isEditMode ? 'Save Changes' : 'Create Warehouse') }}
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="router.navigate(['/warehouses'])">Cancel</button>
+    </div>
+  </form>
+</div>

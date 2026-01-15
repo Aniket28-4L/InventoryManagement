@@ -1,0 +1,53 @@
+<div class="space-y-4" *ngIf="!loading; else loadingState">
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <h1 class="page-title">Welcome, {{ auth.user?.name || 'User' }}</h1>
+    <div class="flex items-center gap-2">
+      <button class="btn btn-secondary" (click)="quickAddProduct()">Quick Add Product</button>
+      <button class="btn btn-primary" (click)="newTransfer()">New Transfer</button>
+    </div>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <app-stat-card icon="package" title="Total Products" [value]="stats.totalProducts | number" (click)="gotoProducts()" class="cursor-pointer"></app-stat-card>
+    <app-stat-card icon="building-2" title="Warehouses" [value]="stats.totalWarehouses" (click)="gotoWarehouses()" class="cursor-pointer"></app-stat-card>
+    <app-stat-card icon="activity" title="Moves Today" [value]="stats.movesToday" (click)="gotoStockHistory()" class="cursor-pointer"></app-stat-card>
+    <app-stat-card icon="alert-triangle" title="Low Stock Items" [value]="stats.lowStockItems" (click)="gotoLowStock()" class="cursor-pointer"></app-stat-card>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="card p-4 lg:col-span-2">
+      <div class="font-semibold mb-2">Stock Movement (last 7 days)</div>
+      <div class="space-y-2">
+        <div class="flex items-center justify-between text-sm text-neutral-600" *ngFor="let row of movementData">
+          <div>{{ row.name }}</div>
+          <div class="font-semibold text-neutral-900">{{ row.moves }}</div>
+        </div>
+        <div class="text-sm text-neutral-500" *ngIf="movementData.length === 0">No movement data.</div>
+      </div>
+    </div>
+    <div class="card p-4">
+      <div class="font-semibold mb-2">Recent Activity</div>
+      <ul class="space-y-2 text-sm">
+        <li class="flex justify-between text-gray-700" *ngFor="let activity of recentActivity">
+          <span>{{ activity.description }}</span>
+          <span class="text-gray-500">{{ activity.timeAgo }}</span>
+        </li>
+        <li class="text-sm text-neutral-500" *ngIf="recentActivity.length === 0">No activity records.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<ng-template #loadingState>
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h1 class="page-title">Loading dashboard...</h1>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="card p-6" *ngFor="let item of [1,2,3,4]">
+        <div class="h-5 w-24 bg-neutral-200 rounded skeleton mb-3"></div>
+        <div class="h-8 w-32 bg-neutral-100 rounded skeleton"></div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+

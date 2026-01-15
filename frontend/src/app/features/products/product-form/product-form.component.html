@@ -1,0 +1,145 @@
+<div class="space-y-4">
+  <h1 class="page-title">{{ isEditMode ? 'Edit Product' : 'Add Product' }}</h1>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 card p-4 space-y-4">
+      <div>
+        <label class="label">Name <span class="text-red-500">*</span></label>
+        <input class="input" formControlName="name" required />
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="label">SKU <span class="text-red-500">*</span></label>
+          <input class="input" formControlName="sku" required />
+        </div>
+        <div>
+          <label class="label">Barcode</label>
+          <input class="input" formControlName="barcode" />
+        </div>
+        <div>
+          <label class="label">UOM</label>
+          <input class="input" formControlName="uom" />
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="label">Category</label>
+          <select class="input" formControlName="category" [disabled]="catalogLoading">
+            <option value="">Select category</option>
+            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Brand</label>
+          <select class="input" formControlName="brand" [disabled]="catalogLoading">
+            <option value="">Select brand</option>
+            <option *ngFor="let br of brands" [value]="br.id">{{ br.name }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Variant</label>
+          <select class="input" formControlName="variant" [disabled]="catalogLoading">
+            <option value="">Select variant</option>
+            <option *ngFor="let variant of variants" [value]="variant.id">{{ variant.name }}</option>
+          </select>
+        </div>
+        <div *ngIf="form.value.variant">
+          <label class="label">Variant Value</label>
+          <select class="input" formControlName="variantValue" [disabled]="catalogLoading || variantValueOptions.length === 0">
+            <option value="">Select value</option>
+            <option *ngFor="let val of variantValueOptions" [value]="val">{{ val }}</option>
+          </select>
+        </div>
+        <div *ngIf="form.value.variant">
+          <label class="label">Variant Quantity (pcs)</label>
+          <input class="input" type="number" min="0" formControlName="variantQty" />
+        </div>
+        <div class="flex items-end" *ngIf="form.value.variant">
+          <button type="button" class="btn btn-secondary w-full" (click)="addVariantEntry()">Add Variant Entry</button>
+        </div>
+      </div>
+      <div *ngIf="variantsList.length > 0" class="mt-2">
+        <div class="label mb-2">Variant Entries</div>
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left">
+              <th class="py-1 pr-2">Variant</th>
+              <th class="py-1 pr-2">Value</th>
+              <th class="py-1 pr-2">Quantity</th>
+              <th class="py-1 pr-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of variantsList; let i = index" class="border-t">
+              <td class="py-2 pr-2">
+                {{ getVariantName(v.option) }}
+              </td>
+              <td class="py-2 pr-2">{{ v.value }}</td>
+              <td class="py-2 pr-2">{{ v.qty }}</td>
+              <td class="py-2 pr-2 text-right">
+                <button type="button" class="btn btn-danger" (click)="removeVariantEntry(i)">Remove</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="sm:col-span-2">
+          <label class="label">Supplier</label>
+          <select class="input" formControlName="supplier" [disabled]="suppliersLoading">
+            <option value="">Select supplier</option>
+            <option *ngFor="let s of suppliers" [value]="s.id">
+              {{ s.name }} - {{ s.companyName }}
+            </option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button type="button" class="btn btn-secondary w-full" (click)="showInlineSupplierForm = true">
+            Add New Supplier
+          </button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="label">Cost</label>
+          <input class="input" type="number" min="0" step="0.01" formControlName="cost" />
+        </div>
+        <div>
+          <label class="label">Price</label>
+          <input class="input" type="number" min="0" step="0.01" formControlName="price" />
+        </div>
+      </div>
+      <div>
+        <label class="label">Description</label>
+        <textarea class="input min-h-[100px]" formControlName="description"></textarea>
+      </div>
+      
+      <div *ngIf="currentImages.length > 0">
+        <div class="label mb-1">Existing Images</div>
+        <ul class="text-sm text-gray-600 space-y-1">
+          <li *ngFor="let src of currentImages">{{ src }}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card p-4 space-y-4">
+      <button type="submit" class="btn btn-primary w-full" [disabled]="saving">
+        {{ saving ? (isEditMode ? 'Saving...' : 'Creating...') : (isEditMode ? 'Save Changes' : 'Create Product') }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Inline supplier creation modal -->
+  <div *ngIf="showInlineSupplierForm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="bg-white max-w-3xl w-full max-h-[90vh] overflow-y-auto rounded shadow-lg p-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold">Add Supplier</h2>
+        <button type="button" class="text-gray-500 hover:text-gray-800" (click)="showInlineSupplierForm = false">
+          ✕
+        </button>
+      </div>
+      <app-supplier-form
+        [inline]="true"
+        (saved)="onInlineSupplierSaved($event)">
+      </app-supplier-form>
+    </div>
+  </div>
+</div>

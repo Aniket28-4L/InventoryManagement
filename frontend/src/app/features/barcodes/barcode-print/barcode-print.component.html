@@ -1,0 +1,80 @@
+<div class="space-y-4">
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <h1 class="page-title">Print Barcodes</h1>
+    <div class="flex items-center gap-2">
+      <button class="btn btn-secondary" (click)="clearSelection()" [disabled]="selectedProducts.length === 0">
+        Clear Selection
+      </button>
+      <button class="btn btn-primary" (click)="print()" [disabled]="selectedProducts.length === 0">
+        <lucide-icon name="printer" class="h-4 w-4"></lucide-icon>
+        Print
+      </button>
+    </div>
+  </div>
+
+  <div class="card p-4 space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label class="label">Print Format</label>
+        <select class="input" [(ngModel)]="printFormat">
+          <option value="standard">Standard</option>
+          <option value="compact">Compact</option>
+          <option value="large">Large</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Quantity per Product</label>
+        <input type="number" min="1" class="input" [(ngModel)]="quantity" />
+      </div>
+      <div class="flex items-end">
+        <p class="text-sm text-gray-600">Selected: {{ selectedProducts.length }} products</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-4">
+    <div *ngIf="loading" class="flex items-center justify-center py-12">
+      <app-spinner class="h-6 w-6"></app-spinner>
+    </div>
+
+    <div *ngIf="!loading && products.length === 0" class="text-center py-12 text-gray-500">
+      No products found.
+    </div>
+
+    <div *ngIf="!loading && products.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div
+        *ngFor="let product of products"
+        class="border rounded-lg p-4 cursor-pointer transition-colors"
+        [ngClass]="{
+          'border-blue-500 bg-blue-50': isSelected(product),
+          'border-gray-200 hover:border-gray-300': !isSelected(product)
+        }"
+        (click)="toggleProduct(product)">
+        <div class="flex items-start justify-between mb-2">
+          <div class="flex-1">
+            <h3 class="font-semibold text-sm">{{ product.name }}</h3>
+            <p class="text-xs text-gray-500">{{ product.sku }}</p>
+          </div>
+          <input type="checkbox" [checked]="isSelected(product)" (click)="$event.stopPropagation()" />
+        </div>
+        <div *ngIf="product.barcode" class="mt-2">
+          <app-barcode-preview type="code128" [value]="product.barcode"></app-barcode-preview>
+        </div>
+        <div *ngIf="!product.barcode" class="mt-2 text-xs text-gray-400">
+          No barcode assigned
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print Area -->
+  <div class="hidden print:block print:space-y-4">
+    <div *ngFor="let product of selectedProducts" class="print:break-inside-avoid">
+      <div *ngFor="let i of [].constructor(quantity)" class="print:mb-4 print:border print:p-4">
+        <h3 class="print:text-lg print:font-bold print:mb-2">{{ product.name }}</h3>
+        <p class="print:text-sm print:mb-2">{{ product.sku }}</p>
+        <app-barcode-preview *ngIf="product.barcode" [type]="'code128'" [value]="product.barcode"></app-barcode-preview>
+      </div>
+    </div>
+  </div>
+</div>

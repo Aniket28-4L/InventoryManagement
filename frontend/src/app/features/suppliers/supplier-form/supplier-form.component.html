@@ -1,0 +1,97 @@
+<div class="space-y-4">
+  <h1 class="page-title">{{ isEditMode ? 'Edit Supplier' : 'Add Supplier' }}</h1>
+  <div *ngIf="loading" class="flex items-center justify-center py-20">
+    <app-spinner class="h-8 w-8"></app-spinner>
+  </div>
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="onSubmit()" class="card p-4 space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="label">Name <span class="text-red-500">*</span></label>
+        <input class="input" formControlName="name" required />
+        <div *ngIf="form.get('name')?.invalid && form.get('name')?.touched" class="text-red-500 text-sm mt-1">
+          Name is required
+        </div>
+      </div>
+      <div>
+        <label class="label">Company Name <span class="text-red-500">*</span></label>
+        <input class="input" formControlName="companyName" required />
+        <div *ngIf="form.get('companyName')?.invalid && form.get('companyName')?.touched" class="text-red-500 text-sm mt-1">
+          Company name is required
+        </div>
+      </div>
+      <div>
+        <label class="label">Contact Name</label>
+        <input class="input" formControlName="contactName" />
+      </div>
+      <div>
+        <label class="label">Email</label>
+        <input class="input" type="email" formControlName="email" />
+      </div>
+      <div>
+        <label class="label">Phone</label>
+        <input class="input" type="tel" formControlName="phone" />
+      </div>
+      <div class="md:col-span-2">
+        <label class="label">Address</label>
+        <input class="input" formControlName="address" />
+      </div>
+      <div>
+        <label class="label">City</label>
+        <input class="input" formControlName="city" />
+      </div>
+      <div>
+        <label class="label">State</label>
+        <input class="input" formControlName="state" />
+      </div>
+      <div>
+        <label class="label">Zip Code</label>
+        <input class="input" formControlName="zipCode" />
+      </div>
+      <div>
+        <label class="label">Country</label>
+        <input class="input" formControlName="country" />
+      </div>
+      <div>
+        <label class="label">Website</label>
+        <input class="input" type="url" formControlName="website" />
+      </div>
+      <div class="md:col-span-2" *ngIf="!inline">
+        <label class="label">Products</label>
+        <div *ngIf="productsLoading" class="text-sm text-gray-500">Loading products...</div>
+        <div *ngIf="!productsLoading" class="space-y-2">
+          <div *ngIf="selectedProducts.length > 0" class="flex flex-wrap gap-2 mb-2 p-2 bg-gray-50 rounded">
+            <span
+              *ngFor="let product of selectedProducts"
+              class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm cursor-pointer hover:bg-blue-200"
+              (click)="removeProduct(product.id)"
+              title="Click to remove"
+            >
+              {{ product.name }}
+              <span class="text-blue-600 font-bold">×</span>
+            </span>
+          </div>
+          <select
+            class="input"
+            (change)="onProductSelect($event)"
+            [value]=""
+          >
+            <option value="">Select a product to add</option>
+            <option *ngFor="let product of products" [value]="product.id" [disabled]="(form.value.products || []).includes(product.id)">
+              {{ product.name }} ({{ product.sku }})
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="md:col-span-2">
+        <label class="label">Notes</label>
+        <textarea class="input min-h-[100px]" formControlName="notes"></textarea>
+      </div>
+    </div>
+    <div class="flex gap-2 pt-4">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">
+        {{ saving ? (isEditMode ? 'Saving...' : 'Creating...') : (isEditMode ? 'Save Changes' : 'Create Supplier') }}
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="router.navigate(['/suppliers'])">Cancel</button>
+    </div>
+  </form>
+</div>

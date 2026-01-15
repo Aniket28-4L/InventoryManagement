@@ -1,0 +1,45 @@
+<div class="space-y-4">
+  <h1 class="page-title">Generate Barcode</h1>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="card p-4 space-y-4">
+      <div>
+        <label class="label">Select Product</label>
+        <select class="input" [(ngModel)]="selectedProduct" (change)="onProductSelect()" [disabled]="loading">
+          <option [ngValue]="null">Select a product</option>
+          <option *ngFor="let product of products" [ngValue]="product">{{ product.name }} ({{ product.sku }})</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Barcode Value</label>
+        <input class="input" [(ngModel)]="barcodeValue" placeholder="Enter barcode value" />
+      </div>
+      <div *ngIf="selectedProduct">
+        <label class="label">Variant Value</label>
+        <select class="input" [(ngModel)]="selectedVariantValue">
+          <option value="">Select value</option>
+          <option *ngFor="let val of variantValues()" [value]="val">{{ val }}</option>
+        </select>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-primary" (click)="generateBarcode()">Generate</button>
+        <button *ngIf="selectedProduct" class="btn btn-secondary" (click)="saveBarcodeToProduct()">Save to Product</button>
+      </div>
+    </div>
+
+    <div class="card p-4" *ngIf="generatedBarcode">
+      <h2 class="text-lg font-semibold mb-4">Generated Barcodes</h2>
+      <div class="flex flex-col items-center justify-center gap-6 p-8 border-2 border-dashed border-gray-300 rounded-lg">
+        <div class="flex flex-col items-center gap-2">
+          <app-barcode-preview type="code128" [value]="generatedBarcode"></app-barcode-preview>
+          <p class="text-sm text-gray-600">Code 128</p>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <app-barcode-preview type="qr" [value]="getQrCodeValue()"></app-barcode-preview>
+          <p class="text-sm text-gray-600">QR Code</p>
+        </div>
+        <p class="mt-4 text-sm text-gray-600 font-medium">Barcode Value: {{ generatedBarcode }}</p>
+      </div>
+    </div>
+  </div>
+</div>

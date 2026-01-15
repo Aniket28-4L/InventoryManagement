@@ -1,0 +1,315 @@
+<div *ngIf="loading" class="flex items-center justify-center py-20">
+  <app-spinner class="h-8 w-8"></app-spinner>
+</div>
+
+<div *ngIf="!loading && !product" class="card p-6 text-center text-sm text-gray-600">
+  Product not found.
+</div>
+
+<div *ngIf="!loading && product" class="space-y-4">
+  <div class="flex items-center justify-between">
+    <h1 class="page-title">{{ product.name }}</h1>
+    <div class="flex items-center gap-2">
+      <button (click)="generatePdf()" class="btn btn-primary" [disabled]="generatingPdf">
+        <span *ngIf="!generatingPdf">Generate PDF</span>
+        <span *ngIf="generatingPdf">Generating...</span>
+      </button>
+      <a [routerLink]="['/products', product.id, 'edit']" class="btn btn-secondary">Edit</a>
+      <button (click)="openBarcodeModal()" class="btn btn-secondary">
+        <lucide-icon name="barcode" class="h-4 w-4"></lucide-icon>
+        Generate Barcode
+      </button>
+      <button (click)="printLabel()" class="btn btn-secondary" [disabled]="!product.barcode">
+        <lucide-icon name="printer" class="h-4 w-4"></lucide-icon>
+        Print Label
+      </button>
+    </div>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="card p-4 space-y-3 lg:col-span-2">
+      <div class="grid grid-cols-3 gap-2 py-2 border-b last:border-b-0">
+        <div class="text-sm text-gray-500">SKU</div>
+        <div class="col-span-2 text-sm text-gray-800">{{ product.sku || '-' }}</div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 py-2 border-b last:border-b-0">
+        <div class="text-sm text-gray-500">Barcode</div>
+        <div class="col-span-2 text-sm text-gray-800">{{ product.barcode || '-' }}</div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 py-2 border-b last:border-b-0">
+        <div class="text-sm text-gray-500">Unit</div>
+        <div class="col-span-2 text-sm text-gray-800">{{ product.uom || '-' }}</div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 py-2 border-b last:border-b-0">
+        <div class="text-sm text-gray-500">Cost</div>
+        <div class="col-span-2 text-sm text-gray-800"> {{ formatCurrency(product.cost) }}</div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 py-2 border-b last:border-b-0">
+        <div class="text-sm text-gray-500">Price</div>
+        <div class="col-span-2 text-sm text-gray-800"> {{ formatCurrency(product.price) }}</div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 py-2 border-b last:border-b-0">
+        <div class="text-sm text-gray-500">Category</div>
+        <div class="col-span-2 text-sm text-gray-800">{{ product.categoryName || '-' }}</div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 py-2 border-b last:border-b-0">
+        <div class="text-sm text-gray-500">Brand</div>
+        <div class="col-span-2 text-sm text-gray-800">{{ product.brandName || '-' }}</div>
+      </div>
+      <div class="grid grid-cols-3 gap-2 py-2 border-b last:border-b-0" *ngIf="product.supplierName">
+        <div class="text-sm text-gray-500">Supplier</div>
+        <div class="col-span-2 text-sm text-gray-800">
+          <div class="font-medium">{{ product.supplierName }}</div>
+          <div *ngIf="product.supplier && product.supplier.companyName" class="text-xs text-gray-600">
+            {{ product.supplier.companyName }}
+          </div>
+          <div *ngIf="product.supplier && (product.supplier.contact?.email || product.supplier.contact?.phone)" class="mt-1 text-xs text-gray-600 space-y-0.5">
+            <div *ngIf="product.supplier.contact?.email">Email: {{ product.supplier.contact.email }}</div>
+            <div *ngIf="product.supplier.contact?.phone">Phone: {{ product.supplier.contact.phone }}</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="label mb-1">Description</div>
+        <div class="text-sm text-gray-700 whitespace-pre-line">{{ product.description || 'No description provided.' }}</div>
+      </div>
+      <div *ngIf="(product.variants && product.variants.length > 0) || product.variantName || product.variantValue" class="grid grid-cols-3 gap-2 py-2 border-b last:border-b-0">
+        <div class="text-sm text-gray-500">Variants</div>
+        <div class="col-span-2 text-sm text-gray-800">
+          <div *ngIf="product.variants && product.variants.length > 0; else singleVariant">
+            <div *ngFor="let v of product.variants" class="mb-1">
+              <span class="font-medium">{{ v.option }}:</span> {{ v.value }}
+            </div>
+          </div>
+          <ng-template #singleVariant>
+            <div>{{ product.variantName || '-' }}</div>
+            <div *ngIf="product.variantValue" class="text-xs text-gray-600">Value: {{ product.variantValue }}</div>
+          </ng-template>
+        </div>
+      </div>
+      <div *ngIf="product.variants && product.variants.length > 0" class="mt-2">
+        <div class="label mb-1">Variant Entries</div>
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left border-b">
+              <th class="py-2 pr-2">Variant</th>
+              <th class="py-2 pr-2">Value</th>
+              <th class="py-2 pr-2">Quantity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of product.variants" class="border-b">
+              <td class="py-2 pr-2">{{ v.option }}</td>
+              <td class="py-2 pr-2">{{ v.value }}</td>
+              <td class="py-2 pr-2">{{ v.qty || 0 }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+    </div>
+    <div class="card p-4">
+      <div class="label mb-2">Barcode</div>
+      <div *ngIf="product.barcode" class="flex flex-wrap items-center gap-3">
+        <div class="flex flex-col items-center gap-2">
+          <app-barcode-preview type="code128" [value]="printBarcodeValue || product.barcode"></app-barcode-preview>
+          <span class="text-xs text-gray-500">Code 128</span>
+        </div>
+        <div class="flex flex-col items-center gap-2">
+          <app-barcode-preview type="qr" [value]="getQrCodeValue()"></app-barcode-preview>
+          <span class="text-xs text-gray-500">QR Code</span>
+        </div>
+      </div>
+      <div *ngIf="!product.barcode" class="text-sm text-gray-500">No barcode available.</div>
+    </div>
+  </div>
+
+  <div class="card p-4">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold">Stock Levels</h2>
+      <button (click)="showAddStockModal = true" class="btn btn-primary flex items-center gap-2">
+        <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+        Add Stock
+      </button>
+    </div>
+
+    <div *ngIf="!stockLoading" class="mb-4 p-3 rounded-lg border"
+         [ngClass]="{
+           'bg-red-50 border-red-200': hasZeroStock,
+           'bg-orange-50 border-orange-200': hasLowStock && !hasZeroStock,
+           'bg-blue-50 border-blue-200': !hasZeroStock && !hasLowStock
+         }">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <lucide-icon *ngIf="hasZeroStock" name="alert-triangle" class="text-red-600 h-5 w-5"></lucide-icon>
+          <lucide-icon *ngIf="hasLowStock && !hasZeroStock" name="alert-triangle" class="text-orange-600 h-5 w-5"></lucide-icon>
+          <div>
+            <div class="text-sm font-medium text-gray-700">
+              Total Stock: <span [ngClass]="{'text-red-600 font-bold': hasZeroStock, 'text-gray-900': !hasZeroStock}">{{ totalStock }}</span>
+            </div>
+            <div class="text-xs text-gray-600 mt-0.5">
+              Available: <span [ngClass]="{'text-orange-600 font-semibold': hasLowStock, 'text-gray-700': !hasLowStock}">{{ totalAvailable }}</span>
+            </div>
+          </div>
+        </div>
+        <button *ngIf="hasZeroStock" (click)="showAddStockModal = true" class="text-sm text-red-700 hover:text-red-900 font-medium underline">
+          Add Stock Now
+        </button>
+      </div>
+      <div *ngIf="hasZeroStock" class="mt-2 text-sm text-red-700">
+        ⚠️ This product is out of stock. Consider adding stock to meet demand.
+      </div>
+      <div *ngIf="hasLowStock && !hasZeroStock" class="mt-2 text-sm text-orange-700">
+        ⚠️ All available stock is currently reserved. No stock available for new orders.
+      </div>
+    </div>
+
+    <div *ngIf="stockLoading" class="text-center py-4">
+      <app-spinner class="h-6 w-6 mx-auto"></app-spinner>
+    </div>
+
+    <div *ngIf="!stockLoading && stock.length === 0" class="text-center py-8 text-gray-500">
+      No stock entries found. Add stock to get started.
+    </div>
+
+    <div *ngIf="!stockLoading && stock.length > 0" class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b">
+            <th class="text-left py-2 px-3 text-sm font-medium text-gray-700">Warehouse</th>
+            <th class="text-left py-2 px-3 text-sm font-medium text-gray-700">Variant</th>
+            <th class="text-left py-2 px-3 text-sm font-medium text-gray-700">Location</th>
+            <th class="text-right py-2 px-3 text-sm font-medium text-gray-700">Quantity</th>
+            <th class="text-right py-2 px-3 text-sm font-medium text-gray-700">Available</th>
+            <th class="text-center py-2 px-3 text-sm font-medium text-gray-700">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of stock" class="border-b hover:bg-gray-50"
+              [ngClass]="{
+                'bg-red-50/30': (item.qty || 0) === 0,
+                'bg-orange-50/30': (item.qty || 0) > 0 && (item.availableQty || 0) === 0
+              }">
+            <td class="py-2 px-3 text-sm">{{ item.warehouse?.name || item.warehouse?.code || 'Unknown' }}</td>
+            <td class="py-2 px-3 text-sm">{{ item.variantValue || '-' }}</td>
+            <td class="py-2 px-3 text-sm text-gray-600">
+              {{ formatLocation(item.location) }}
+            </td>
+            <td class="py-2 px-3 text-sm text-right font-medium">
+              <div class="flex items-center justify-end gap-1">
+                <lucide-icon *ngIf="(item.qty || 0) === 0" name="alert-triangle" class="text-red-500 h-3.5 w-3.5"></lucide-icon>
+                <span [ngClass]="{'text-red-600 font-bold': (item.qty || 0) === 0}">{{ item.qty || 0 }}</span>
+              </div>
+            </td>
+            <td class="py-2 px-3 text-sm text-right">
+              <span [ngClass]="{
+                'text-orange-600 font-semibold': (item.qty || 0) > 0 && (item.availableQty || 0) === 0,
+                'text-green-600': (item.availableQty || 0) > 0,
+                'text-gray-500': (item.availableQty || 0) === 0
+              }">{{ item.availableQty || 0 }}</span>
+            </td>
+            <td class="py-2 px-3 text-center">
+              <button (click)="openAdjustModal(item)" class="text-blue-600 hover:text-blue-800 flex items-center gap-1 mx-auto">
+                <lucide-icon name="edit-2" class="h-3.5 w-3.5"></lucide-icon>
+                Adjust
+              </button>
+              <button (click)="eraseStock(item)" class="text-red-600 hover:text-red-800 flex items-center gap-1 mx-auto mt-1">
+                <lucide-icon name="trash-2" class="h-3.5 w-3.5"></lucide-icon>
+                Erase
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <app-modal *ngIf="showAddStockModal" [open]="showAddStockModal" (close)="showAddStockModal = false; stockForm = { warehouseId: '', qty: '', locationId: '' }" title="Add Stock">
+    <form (ngSubmit)="handleAddStock($event)" class="space-y-4">
+      <div>
+        <label class="label">Warehouse <span class="text-red-500">*</span></label>
+        <select class="input" [(ngModel)]="stockForm.warehouseId" name="warehouseId" required>
+          <option value="">Select warehouse</option>
+          <option *ngFor="let wh of warehouses" [value]="wh._id || wh.id">
+            {{ wh.name }} {{ wh.code ? '(' + wh.code + ')' : '' }}
+          </option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Variant Value <span class="text-red-500" *ngIf="variantValues().length > 0">*</span></label>
+        <select class="input" [(ngModel)]="stockForm.variantValue" name="variantValue">
+          <option value="">Select value</option>
+          <option *ngFor="let val of variantValues()" [value]="val">{{ val }}</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1" *ngIf="variantValues().length === 0">No variant values defined for this product</p>
+      </div>
+      <div>
+        <label class="label">Quantity <span class="text-red-500">*</span></label>
+        <input type="number" step="0.01" min="0.01" class="input" [(ngModel)]="stockForm.qty" name="qty" required />
+      </div>
+      <div class="flex gap-2 pt-4">
+        <button type="submit" class="btn btn-primary flex-1">Add Stock</button>
+        <button type="button" (click)="showAddStockModal = false; stockForm = { warehouseId: '', qty: '', locationId: '' }" class="btn btn-secondary flex-1">Cancel</button>
+      </div>
+    </form>
+  </app-modal>
+
+  <app-modal *ngIf="showAdjustStockModal && selectedStock" [open]="showAdjustStockModal" (close)="showAdjustStockModal = false; selectedStock = null; stockForm = { warehouseId: '', qty: '', locationId: '' }" title="Adjust Stock">
+    <form (ngSubmit)="handleAdjustStock($event)" class="space-y-4">
+      <div>
+        <label class="label">Warehouse</label>
+        <input type="text" class="input bg-gray-100" [value]="selectedStock.warehouse?.name || selectedStock.warehouse?.code || 'Unknown'" disabled />
+      </div>
+      <div>
+        <label class="label">Quantity <span class="text-red-500">*</span></label>
+        <input type="number" step="0.01" min="0" class="input" [(ngModel)]="stockForm.qty" name="qty" required />
+        <p class="text-xs text-gray-500 mt-1">Set the exact quantity for this warehouse</p>
+      </div>
+      <div class="flex gap-2 pt-4">
+        <button type="submit" class="btn btn-primary flex-1">Update Stock</button>
+        <button type="button" (click)="showAdjustStockModal = false; selectedStock = null; stockForm = { warehouseId: '', qty: '', locationId: '' }" class="btn btn-secondary flex-1">Cancel</button>
+      </div>
+    </form>
+  </app-modal>
+</div>
+
+<!-- Print-only label section -->
+<div #printContainer class="print-label-container print-only">
+  <div class="label-grid">
+    <div class="product-label" *ngFor="let label of variantLabels">
+      <div class="label-header">
+        <h2 class="label-product-name">{{ label.name }}</h2>
+        <p class="label-sku">SKU: {{ label.sku }} <span *ngIf="label.variantValue">- {{ label.variantValue }}</span></p>
+      </div>
+
+      <div class="label-barcodes">
+        <app-barcode-preview
+          type="code128"
+          [value]="label.barcode">
+        </app-barcode-preview>
+
+        <p class="label-barcode-text">{{ label.barcode }}</p>
+      </div>
+
+      <div class="label-footer">
+        <p class="label-price">{{ formatCurrency(label.price) }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-modal *ngIf="showBarcodeModal" [open]="showBarcodeModal" (close)="showBarcodeModal = false" title="Generate Barcode">
+  <form (ngSubmit)="confirmBarcodeSelection()" class="space-y-4">
+    <div>
+      <label class="label">Variant Value <span class="text-red-500">*</span></label>
+      <select class="input" [(ngModel)]="selectedVariantValue" name="variantValue" required>
+        <option value="">Select value</option>
+        <option *ngFor="let val of variantValues()" [value]="val">{{ val }}</option>
+      </select>
+    </div>
+    <div class="flex gap-2 pt-2">
+      <button type="submit" class="btn btn-primary flex-1">Generate</button>
+      <button type="button" (click)="showBarcodeModal = false" class="btn btn-secondary flex-1">Cancel</button>
+    </div>
+  </form>
+</app-modal>
+

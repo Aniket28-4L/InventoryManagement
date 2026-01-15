@@ -1,0 +1,48 @@
+<div class="space-y-4">
+  <h1 class="page-title">{{ isEditMode ? 'Edit User' : 'Add User' }}</h1>
+  <div *ngIf="loading" class="flex items-center justify-center py-20">
+    <app-spinner class="h-8 w-8"></app-spinner>
+  </div>
+  <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="onSubmit()" class="card p-4 space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="label">Name <span class="text-red-500">*</span></label>
+        <input class="input" formControlName="name" required />
+      </div>
+      <div>
+        <label class="label">Email <span class="text-red-500">*</span></label>
+        <input class="input" type="email" formControlName="email" required />
+      </div>
+      <div>
+        <label class="label">Password <span class="text-red-500">*</span> <span *ngIf="isEditMode" class="text-xs text-gray-500">(leave blank to keep current)</span></label>
+        <input class="input" type="password" formControlName="password" [required]="!isEditMode" />
+      </div>
+      <div>
+        <label class="label">Role <span class="text-red-500">*</span></label>
+        <select class="input" formControlName="role" required>
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="label">Phone</label>
+        <input class="input" type="tel" formControlName="phone" />
+      </div>
+      <div>
+        <label class="label">Department</label>
+        <input class="input" formControlName="department" />
+      </div>
+      <div class="md:col-span-2">
+        <label class="flex items-center gap-2">
+          <input type="checkbox" formControlName="isActive" />
+          <span>Active</span>
+        </label>
+      </div>
+    </div>
+    <div class="flex gap-2 pt-4">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">
+        {{ saving ? (isEditMode ? 'Saving...' : 'Creating...') : (isEditMode ? 'Save Changes' : 'Create User') }}
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="router.navigate(['/users'])">Cancel</button>
+    </div>
+  </form>
+</div>

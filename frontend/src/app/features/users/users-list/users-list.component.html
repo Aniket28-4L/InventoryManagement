@@ -1,0 +1,107 @@
+<div class="space-y-4">
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <h1 class="page-title">Users</h1>
+    <button class="btn btn-primary" (click)="router.navigate(['/users/new'])">
+      <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+      Add User
+    </button>
+  </div>
+
+  <div class="card p-4 space-y-4">
+    <div class="flex items-center gap-4 mb-4">
+      <div class="relative flex-1 max-w-md">
+        <lucide-icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4"></lucide-icon>
+        <input
+          type="text"
+          placeholder="Search users..."
+          class="input pl-10"
+          [ngModel]="searchTerm"
+          (ngModelChange)="onSearchInput($event)"
+        />
+        <button 
+          *ngIf="searchTerm" 
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          (click)="clearSearch()"
+          type="button"
+        >
+          <lucide-icon name="x" class="h-4 w-4"></lucide-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-neutral-200">
+        <thead class="bg-neutral-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">Name</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">Email</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">Role</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-neutral-100">
+          <tr *ngIf="loading">
+            <td class="px-6 py-12 text-center" colspan="5">
+              <app-spinner className="mx-auto"></app-spinner>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && users.length === 0">
+            <td class="px-6 py-12 text-center text-sm text-neutral-500" colspan="5">
+              No users found.
+            </td>
+          </tr>
+          <tr *ngFor="let user of users" class="hover:bg-neutral-50 transition-colors">
+            <td class="px-6 py-4 text-sm font-semibold text-brand-700">{{ user.name }}</td>
+            <td class="px-6 py-4 text-sm text-neutral-700">{{ user.email }}</td>
+            <td class="px-6 py-4 text-sm text-neutral-700">{{ user.role || '-' }}</td>
+            <td class="px-6 py-4 text-sm">
+              <span [ngClass]="{
+                'px-2 py-1 rounded-full text-xs font-medium': true,
+                'bg-green-100 text-green-800': user.isActive !== false,
+                'bg-gray-100 text-gray-800': user.isActive === false
+              }">
+                {{ user.isActive !== false ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-sm text-neutral-700 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button class="text-blue-600 hover:text-blue-800" (click)="router.navigate(['/users', user.id || user._id])">
+                  <lucide-icon name="edit" class="h-4 w-4"></lucide-icon>
+                </button>
+                <button class="text-red-600 hover:text-red-800" (click)="openDelete(user)">
+                  <lucide-icon name="trash-2" class="h-4 w-4"></lucide-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <div class="text-sm text-neutral-600">
+        Total <span class="font-semibold text-neutral-900">{{ total }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn btn-secondary btn-sm" (click)="prev()" [disabled]="page === 1">Previous</button>
+        <div class="text-sm text-neutral-600">
+          Page {{ page }} of {{ totalPages }}
+        </div>
+        <button class="btn btn-secondary btn-sm" (click)="next()" [disabled]="page * pageSize >= total">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-modal
+  [open]="!!deleteTarget"
+  title="Delete User"
+  (close)="closeDelete()"
+>
+  <p>Are you sure you want to delete {{ deleteTarget?.name }}? This action cannot be undone.</p>
+  <div modal-footer>
+    <button class="btn btn-secondary" type="button" (click)="closeDelete()">Cancel</button>
+    <button class="btn btn-danger" type="button" (click)="confirmDelete()">Delete</button>
+  </div>
+</app-modal>

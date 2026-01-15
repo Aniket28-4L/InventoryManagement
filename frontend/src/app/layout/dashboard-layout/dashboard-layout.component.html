@@ -1,0 +1,19 @@
+<div class="min-h-screen bg-neutral-25" (touchstart)="handleSwipeStart($event)" (touchend)="handleSwipeEnd($event)">
+  <div class="flex">
+    <!-- Overlay for mobile when sidebar is open -->
+    <div *ngIf="isMobile && sidebarOpen" 
+         class="fixed inset-0 bg-black/50 z-30 transition-opacity"
+         (click)="sidebarOpen = false">
+    </div>
+
+    <app-sidebar [open]="sidebarOpen" (toggle)="toggleSidebar()"></app-sidebar>
+    <div class="flex-1 min-w-0 transition-all duration-300" [ngClass]="(!isMobile && sidebarOpen) ? 'md:ml-72 lg:ml-72' : ((!isMobile && !sidebarOpen) ? 'md:ml-20 lg:ml-20' : '')">
+      <app-topbar (toggleSidebar)="toggleSidebar()"></app-topbar>
+      <main class="p-4 md:p-6 lg:p-8 space-y-6">
+        <router-outlet></router-outlet>
+      </main>
+    </div>
+  </div>
+</div>
+
+

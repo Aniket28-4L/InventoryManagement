@@ -1,0 +1,142 @@
+<div class="space-y-4">
+  <h1 class="page-title">Scan Barcode</h1>
+
+  <div class="card p-4 space-y-4">
+    <div class="space-y-2">
+      <label class="label">Camera Scanner</label>
+      <div class="flex items-center gap-2">
+        <select class="input" [ngModel]="cameraId" (ngModelChange)="changeCamera($event)">
+          <option *ngFor="let cam of availableCameras" [value]="cam.id">{{ cam.label || cam.id }}</option>
+        </select>
+        <button class="btn btn-primary" type="button" (click)="startScanning()" [disabled]="scanActive">Start Camera</button>
+        <button class="btn btn-secondary" type="button" (click)="stopScanning()" [disabled]="!scanActive">Stop Camera</button>
+      </div>
+      <div id="qr-reader" class="mt-2 border rounded min-h-[280px] flex items-center justify-center"></div>
+      <div class="text-sm mt-1" [ngClass]="{'text-gray-600': !scanSuccess, 'text-green-700': scanSuccess}">
+        <span *ngIf="scanActive && !scanSuccess">Scanning…</span>
+        <span *ngIf="scanSuccess">Scan successful</span>
+      </div>
+    </div>
+    <div>
+      <label class="label">Scan or Enter Barcode (Code 128 or QR Code)</label>
+      <div class="flex gap-2">
+        <input
+          type="text"
+          class="input flex-1"
+          [(ngModel)]="scannedBarcode"
+          (input)="onBarcodeInput($any($event.target).value)"
+          placeholder="Scan barcode or enter manually"
+          autofocus
+        />
+        <button *ngIf="scannedBarcode" class="btn btn-secondary" (click)="clearScan()" type="button">
+          <lucide-icon name="x" class="h-4 w-4"></lucide-icon>
+        </button>
+      </div>
+      <p class="text-sm text-gray-500 mt-1">Supported formats: Code 128, QR Code</p>
+    </div>
+
+    <div *ngIf="loading" class="flex items-center justify-center py-8">
+      <app-spinner class="h-8 w-8"></app-spinner>
+      <span class="ml-2 text-gray-600">Searching for product...</span>
+    </div>
+
+    <div *ngIf="product && !loading" class="space-y-4">
+      <div class="border-t pt-4">
+        <h2 class="text-lg font-semibold mb-4">Transfer Stock</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm font-medium text-gray-700">Product</label>
+            <p class="text-gray-900 font-semibold">{{ product.name }} <span class="text-gray-600">({{ product.sku }})</span></p>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700">Quantity</label>
+            <input type="number" min="1" class="input" [(ngModel)]="quantity" />
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700">From Warehouse</label>
+            <select class="input" [(ngModel)]="fromWarehouseId">
+              <option value="">Select source warehouse</option>
+              <option *ngFor="let w of warehouses" [value]="w.id">{{ w.name || w.code }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-700">Transfer Type</label>
+            <div class="flex items-center gap-4">
+              <label class="inline-flex items-center gap-2">
+                <input type="radio" name="transferType" [ngModel]="transferType" (ngModelChange)="transferType=$event" value="warehouse" />
+                <span>Warehouse</span>
+              </label>
+              <label class="inline-flex items-center gap-2">
+                <input type="radio" name="transferType" [ngModel]="transferType" (ngModelChange)="transferType=$event" value="store" />
+                <span>Store</span>
+              </label>
+            </div>
+          </div>
+          <div *ngIf="transferType==='warehouse'">
+            <label class="text-sm font-medium text-gray-700">To Warehouse</label>
+            <select class="input" [(ngModel)]="toWarehouseId">
+              <option value="">Select destination warehouse</option>
+              <option *ngFor="let w of warehouses" [value]="w.id">{{ w.name || w.code }}</option>
+            </select>
+          </div>
+          <div *ngIf="transferType==='store'">
+            <label class="text-sm font-medium text-gray-700">To Store</label>
+            <select class="input" [(ngModel)]="toStoreId">
+              <option value="">Select destination store</option>
+              <option *ngFor="let s of stores" [value]="s.id">{{ s.name }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-2 pt-4">
+          <button class="btn btn-primary" type="button" (click)="confirmTransfer()">Confirm Transfer</button>
+          <button class="btn btn-secondary" type="button" (click)="clearScan()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!product && !loading && scannedBarcode" class="text-center py-8 text-gray-500">
+      <p>No product found for barcode: <strong>{{ scannedBarcode }}</strong></p>
+      <p class="text-sm mt-2">Make sure the barcode is correct and the product exists in the system.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Action Choice Modal for Admin/Manager -->
+<app-modal *ngIf="showActionModal" [open]="showActionModal" (close)="closeActionModal()" title="Select Action">
+  <div class="space-y-4">
+    <div *ngIf="scannedProduct" class="p-4 bg-gray-50 rounded-lg">
+      <p class="text-sm text-gray-600">Scanned Product:</p>
+      <p class="text-lg font-semibold text-gray-900">{{ scannedProduct.name }}</p>
+      <p class="text-sm text-gray-500">SKU: {{ scannedProduct.sku || '-' }}</p>
+    </div>
+    
+    <p class="text-gray-700">What would you like to do with this product?</p>
+    
+    <div class="grid grid-cols-1 gap-3">
+      <button 
+        class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left"
+        (click)="selectAction('transfer')">
+        <lucide-icon name="arrow-left-right" class="h-6 w-6 text-blue-600"></lucide-icon>
+        <div>
+          <p class="font-semibold text-gray-900">Stock Transfer</p>
+          <p class="text-sm text-gray-500">Transfer stock between warehouses or to stores</p>
+        </div>
+      </button>
+      
+      <button 
+        class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors text-left"
+        (click)="selectAction('sales')">
+        <lucide-icon name="shopping-cart" class="h-6 w-6 text-green-600"></lucide-icon>
+        <div>
+          <p class="font-semibold text-gray-900">Add to Sales</p>
+          <p class="text-sm text-gray-500">Add this product to a new sale</p>
+        </div>
+      </button>
+    </div>
+    
+    <div class="flex justify-end pt-2">
+      <button class="btn btn-secondary" (click)="closeActionModal()">Cancel</button>
+    </div>
+  </div>
+</app-modal>
+
