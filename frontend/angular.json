@@ -29,7 +29,8 @@
           "configurations": {
             "production": {
               "optimization": true,
-              "extractLicenses": true
+              "extractLicenses": true,
+              "inspect": false
             },
             "development": {
               "buildOptimizer": false,
@@ -62,7 +63,7 @@
       }
     }
   },
-
+  "defaultProject": "inventory-management",
   "cli": {
     "analytics": false,
     "schematicCollections": [
