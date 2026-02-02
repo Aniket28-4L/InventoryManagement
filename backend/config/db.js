@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 export default async function connectDB() {
   const uri =
     process.env.MONGO_URI ||
-    'mongodb+srv://aniket:zAJrmkCFS3RDBCS@im.qvp749j.mongodb.net/inventory?retryWrites=true&w=majority';
+    'mongodb+srv://manubhajadeja05_db_user:CPb3cFKNoNwCGpse@cluster0.ouahnsc.mongodb.net/inventory?retryWrites=true&w=majority';
   
   // Set up connection event handlers
   mongoose.connection.on('connected', () => {
