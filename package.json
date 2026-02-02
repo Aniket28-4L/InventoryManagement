@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "rimraf": "^6.1.2"
+  },
+  "dependencies": {
+    "ngx-toastr": "^20.0.4"
+  }
+}
