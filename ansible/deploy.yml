@@ -4,13 +4,15 @@
   become: yes
 
   vars:
+    project_root: /opt/inventory-management
+    repo_url: git@github.com:Aniket28-4L/InventoryManagement.git
+    repo_branch: DevContainer
     dockerhub_username: "{{ lookup('env', 'DOCKERHUB_USERNAME') }}"
     dockerhub_token: "{{ lookup('env', 'DOCKERHUB_TOKEN') }}"
-    project_root: /opt/inventory-management
-    server_ip: "{{ ansible_host }}"
+    server_ip: "{{ ansible_host | default('localhost') }}"
 
   tasks:
-    - name: Update apt cache and install required packages
+    - name: Install required system packages
       apt:
         name:
           - apt-transport-https
@@ -19,6 +21,7 @@
           - gnupg
           - lsb-release
           - python3-pip
+          - git
         state: present
         update_cache: yes
 
@@ -32,7 +35,7 @@
         repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
         state: present
 
-    - name: Install Docker and Docker Compose plugin
+    - name: Install Docker and Docker Compose
       apt:
         name:
           - docker-ce
@@ -40,7 +43,6 @@
           - containerd.io
           - docker-compose-plugin
         state: present
-        update_cache: yes
 
     - name: Ensure Docker service is running
       service:
@@ -48,28 +50,34 @@
         state: started
         enabled: yes
 
-    - name: Install Docker SDK for Python (required for Ansible docker modules)
-      pip:
-        name: docker
-
-    - name: Add Ansible user to docker group
-      user:
-        name: "{{ ansible_user }}"
-        groups: docker
-        append: yes
-
-    - name: Create project directory
+    - name: Create project directory with correct ownership
       file:
-        path: "{{ project_root }}"
+        path: /opt/inventory-management
         state: directory
+        owner: aniket
+        group: aniket
         mode: '0755'
 
-    - name: Copy production docker-compose file
-      copy:
-        src: docker-compose.yml
-        dest: "{{ project_root }}/docker-compose.yml"
 
-    - name: Login to Docker Hub
+    - name: Clone / Update application repository
+      become: false
+      git:
+        repo: git@github.com:Aniket28-4L/InventoryManagement.git
+        dest: /opt/inventory-management
+        version: DevContainer
+        update: yes
+        force: yes
+        accept_hostkey: yes
+
+
+    - name: Fix ownership of project directory
+      file:
+        path: "{{ project_root }}"
+        owner: aniket
+        group: aniket
+        recurse: yes
+
+    - name: Log in to Docker Hub
       community.docker.docker_login:
         username: "{{ dockerhub_username }}"
         password: "{{ dockerhub_token }}"
@@ -84,15 +92,12 @@
       command: docker compose down
       args:
         chdir: "{{ project_root }}"
-      environment:
-        SERVER_IP: "{{ server_ip }}"
+      ignore_errors: yes
 
     - name: Start application containers
       command: docker compose up -d
       args:
         chdir: "{{ project_root }}"
-      environment:
-        SERVER_IP: "{{ server_ip }}"
 
-    - name: Remove unused Docker images
+    - name: Prune unused Docker images
       command: docker image prune -f
