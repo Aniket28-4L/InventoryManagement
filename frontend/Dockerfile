@@ -14,6 +14,7 @@ RUN npm ci --legacy-peer-deps
 # Copy the rest of the application code
 COPY . .
 
+ENV NODE_OPTIONS=--max-old-space-size=512
 # Build the application for production
 # Adjust the output path if it's different in your angular.json
 RUN npm run build -- --configuration production
