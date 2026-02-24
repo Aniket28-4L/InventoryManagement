@@ -1,26 +1,22 @@
 services:
   frontend:
-    build: ./frontend
+    image: annyket08/inventory-frontend:latest
     ports:
       - "80:80"
     depends_on:
       - backend
 
   backend:
-    build: ./backend
+    image: annyket08/inventory-backend:latest
     ports:
       - "5000:5000"
     environment:
       - PORT=5000
       - MONGO_URI=mongodb://mongodb:27017/inventory
-      - NODE_ENV=development
-      # Allow requests from the frontend running on port 80
-      - ALLOW_ORIGIN=http://localhost
+      - NODE_ENV=production
+      - ALLOW_ORIGIN=http://YOUR_APP_PUBLIC_IP
     depends_on:
       - mongodb
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
 
   mongodb:
     image: mongo:6
@@ -30,7 +26,6 @@ services:
     volumes:
       - mongo-data:/data/db
     restart: always
-
 
 volumes:
   mongo-data:
